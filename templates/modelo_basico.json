@@ -1,0 +1,9 @@
+{
+  "nome": "Ana Clara Moreira",
+  "email": "ana.clara.moreira@example.com",
+  "telefone": "(11) 99876-5432",
+  "resumo": "Profissional com 3 anos de experiência em desenvolvimento de software, com foco em aplicações web e automação de processos. Apaixonada por tecnologia e soluções inovadoras.",
+  "formacao": "Bacharelado em Ciência da Computação - Universidade São Paulo - Conclusão: 2022\nCurso de Extensão em UX Design - Alura - 2023",
+  "experiencia": "Desenvolvedora Front-end - Tech Solutions - 2022 a 2024\nEstagiária em TI - Banco XYZ - 2020 a 2022",
+  "habilidades": "JavaScript, React, Python, Figma, HTML, CSS, Scrum, Git"
+}
