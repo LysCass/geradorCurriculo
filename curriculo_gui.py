@@ -1,99 +1,114 @@
 import tkinter as tk
-from tkinter import messagebox, filedialog, Toplevel
+from tkinter import filedialog, messagebox
 from generator import CurriculoGenerator
-import os
+import json
 
-def criar_interface():
-    def gerar_pdf():
-        dados = coletar_dados()
-        if not dados["nome"]:
-            messagebox.showerror("Erro", "O nome é obrigatório!")
-            return
+# Função para coletar dados da interface
+def coletar_dados():
+    return {
+        "nome": nome_var.get(),
+        "email": email_var.get(),
+        "telefone": telefone_var.get(),
+        "resumo": resumo_txt.get("1.0", tk.END).strip(),
+        "formacao": formacao_txt.get("1.0", tk.END).strip(),
+        "experiencia": experiencia_txt.get("1.0", tk.END).strip(),
+        "habilidades": habilidades_txt.get("1.0", tk.END).strip()
+    }
 
-        caminho = os.path.join("output", f"curriculo_{dados['nome'].replace(' ', '_')}.pdf")
-        gerador = CurriculoGenerator(dados)
-        gerador.gerar_curriculo(caminho)
+# Função para gerar o PDF
+def gerar_pdf():
+    dados = coletar_dados()
+    gerador = CurriculoGenerator(dados)
+    gerador.gerar_curriculo()
 
-    def visualizar_curriculo():
-        dados = coletar_dados()
-        if not dados["nome"]:
-            messagebox.showerror("Erro", "O nome é obrigatório!")
-            return
+# Função para visualizar o conteúdo antes de gerar
+def visualizar_curriculo():
+    dados = coletar_dados()
 
-        visual = Toplevel(root)
-        visual.title("Visualização do Currículo")
-        visual.geometry("500x600")
+    visual = tk.Toplevel()
+    visual.title("Visualização do Currículo")
 
-        texto = f"""
-NOME: {dados['nome']}
-EMAIL: {dados['email']}
-TELEFONE: {dados['telefone']}
+    texto = f"""Nome: {dados['nome']}
+E-mail: {dados['email']}
+Telefone: {dados['telefone']}
 
-RESUMO:
+Resumo Profissional:
 {dados['resumo']}
 
-FORMAÇÃO:
+Formação Acadêmica:
 {dados['formacao']}
 
-EXPERIÊNCIA:
+Experiência Profissional:
 {dados['experiencia']}
 
-HABILIDADES:
-{dados['habilidades']}
-        """
-        tk.Text(visual, wrap="word", height=40, width=60).insert("1.0", texto).pack(padx=10, pady=10)
+Habilidades:
+{dados['habilidades']}"""
 
-    def coletar_dados():
-        return {
-            "nome": nome_var.get(),
-            "email": email_var.get(),
-            "telefone": telefone_var.get(),
-            "resumo": resumo_txt.get("1.0", tk.END).strip(),
-            "formacao": formacao_txt.get("1.0", tk.END).strip(),
-            "experiencia": experiencia_txt.get("1.0", tk.END).strip(),
-            "habilidades": habilidades_txt.get("1.0", tk.END).strip()
-        }
+    # CORRIGIDO: separar criação do Text, inserção e pack
+    text_box = tk.Text(visual, wrap="word", height=40, width=60)
+    text_box.insert("1.0", texto)
+    text_box.pack(padx=10, pady=10)
 
-    global root
-    root = tk.Tk()
-    root.title("Gerador de Currículo")
-    root.geometry("600x750")
+# Função para carregar modelo JSON
+def carregar_template():
+    caminho = filedialog.askopenfilename(title="Selecione um modelo", filetypes=[("JSON files", "*.json")])
+    if not caminho:
+        return
 
-    nome_var = tk.StringVar()
-    email_var = tk.StringVar()
-    telefone_var = tk.StringVar()
+    with open(caminho, "r", encoding="utf-8") as f:
+        dados = json.load(f)
 
-    tk.Label(root, text="Nome:").pack()
-    tk.Entry(root, textvariable=nome_var, width=60).pack()
+    nome_var.set(dados.get("nome", ""))
+    email_var.set(dados.get("email", ""))
+    telefone_var.set(dados.get("telefone", ""))
+    resumo_txt.delete("1.0", tk.END)
+    resumo_txt.insert(tk.END, dados.get("resumo", ""))
+    formacao_txt.delete("1.0", tk.END)
+    formacao_txt.insert(tk.END, dados.get("formacao", ""))
+    experiencia_txt.delete("1.0", tk.END)
+    experiencia_txt.insert(tk.END, dados.get("experiencia", ""))
+    habilidades_txt.delete("1.0", tk.END)
+    habilidades_txt.insert(tk.END, dados.get("habilidades", ""))
 
-    tk.Label(root, text="E-mail:").pack()
-    tk.Entry(root, textvariable=email_var, width=60).pack()
+# Interface Gráfica
+root = tk.Tk()
+root.title("Gerador de Currículo")
 
-    tk.Label(root, text="Telefone:").pack()
-    tk.Entry(root, textvariable=telefone_var, width=60).pack()
+# Variáveis
+nome_var = tk.StringVar()
+email_var = tk.StringVar()
+telefone_var = tk.StringVar()
 
-    tk.Label(root, text="Resumo Profissional:").pack()
-    resumo_txt = tk.Text(root, height=5, width=60)
-    resumo_txt.pack()
+# Layout
+tk.Label(root, text="Nome:").pack()
+tk.Entry(root, textvariable=nome_var).pack(fill="x", padx=10)
 
-    tk.Label(root, text="Formação Acadêmica (uma por linha):").pack()
-    formacao_txt = tk.Text(root, height=5, width=60)
-    formacao_txt.pack()
+tk.Label(root, text="E-mail:").pack()
+tk.Entry(root, textvariable=email_var).pack(fill="x", padx=10)
 
-    tk.Label(root, text="Experiência Profissional (uma por linha):").pack()
-    experiencia_txt = tk.Text(root, height=5, width=60)
-    experiencia_txt.pack()
+tk.Label(root, text="Telefone:").pack()
+tk.Entry(root, textvariable=telefone_var).pack(fill="x", padx=10)
 
-    tk.Label(root, text="Habilidades (separadas por vírgula):").pack()
-    habilidades_txt = tk.Text(root, height=3, width=60)
-    habilidades_txt.pack()
+tk.Label(root, text="Resumo Profissional:").pack()
+resumo_txt = tk.Text(root, height=3)
+resumo_txt.pack(fill="both", padx=10)
 
-    tk.Button(root, text="Visualizar Currículo", command=visualizar_curriculo, bg="blue", fg="white").pack(pady=5)
-    tk.Button(root, text="Gerar Currículo PDF", command=gerar_pdf, bg="green", fg="white").pack(pady=5)
+tk.Label(root, text="Formação Acadêmica (uma por linha):").pack()
+formacao_txt = tk.Text(root, height=3)
+formacao_txt.pack(fill="both", padx=10)
 
-    root.mainloop()
+tk.Label(root, text="Experiência Profissional (uma por linha):").pack()
+experiencia_txt = tk.Text(root, height=3)
+experiencia_txt.pack(fill="both", padx=10)
 
-if __name__ == "__main__":
-    if not os.path.exists("output"):
-        os.makedirs("output")
-    criar_interface()
+tk.Label(root, text="Habilidades (separadas por vírgula):").pack()
+habilidades_txt = tk.Text(root, height=2)
+habilidades_txt.pack(fill="both", padx=10)
+
+# Botões
+tk.Button(root, text="Carregar Modelo JSON", command=carregar_template, bg="gray", fg="white").pack(pady=5)
+tk.Button(root, text="Visualizar Currículo", command=visualizar_curriculo, bg="blue", fg="white").pack(pady=5)
+tk.Button(root, text="Gerar Currículo PDF", command=gerar_pdf, bg="green", fg="white").pack(pady=5)
+
+# Iniciar aplicação
+root.mainloop()
